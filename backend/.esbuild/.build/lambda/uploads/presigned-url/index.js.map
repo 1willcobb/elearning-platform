@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../lambda/uploads/presigned-url/index.ts"],
+  "sourcesContent": ["import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';\n\nexport const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {\n  return {\n    statusCode: 200,\n    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },\n    body: JSON.stringify({ message: 'Upload presigned URL - TODO' }),\n  };\n};\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAEO,IAAM,UAAU,OAAO,UAAgE;AAC5F,SAAO;AAAA,IACL,YAAY;AAAA,IACZ,SAAS,EAAE,gBAAgB,oBAAoB,+BAA+B,IAAI;AAAA,IAClF,MAAM,KAAK,UAAU,EAAE,SAAS,8BAA8B,CAAC;AAAA,EACjE;AACF;",
+  "names": []
+}
