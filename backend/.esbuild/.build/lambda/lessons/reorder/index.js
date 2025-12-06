@@ -23,12 +23,113 @@ __export(reorder_exports, {
   handler: () => handler
 });
 module.exports = __toCommonJS(reorder_exports);
+var import_client_dynamodb = require("@aws-sdk/client-dynamodb");
+var import_lib_dynamodb = require("@aws-sdk/lib-dynamodb");
+var dynamoClient = new import_client_dynamodb.DynamoDBClient({
+  region: process.env.AWS_REGION || "us-east-1",
+  ...process.env.STAGE === "local" && {
+    endpoint: "http://localhost:8000",
+    credentials: {
+      accessKeyId: "local",
+      secretAccessKey: "local"
+    }
+  }
+});
+var docClient = import_lib_dynamodb.DynamoDBDocumentClient.from(dynamoClient);
 var handler = async (event) => {
-  return {
-    statusCode: 200,
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    body: JSON.stringify({ message: "Lesson endpoint - TODO", path: event.path })
-  };
+  try {
+    const courseId = event.pathParameters?.courseId;
+    if (!courseId) {
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "courseId is required" })
+      };
+    }
+    if (!event.body) {
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "Request body is required" })
+      };
+    }
+    const body = JSON.parse(event.body);
+    const { sectionId, lessonOrder } = body;
+    if (!sectionId || !Array.isArray(lessonOrder)) {
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({
+          error: "sectionId and lessonOrder array are required",
+          example: {
+            sectionId: "001",
+            lessonOrder: [
+              { lessonId: "001-001", order: 1 },
+              { lessonId: "001-002", order: 2 }
+            ]
+          }
+        })
+      };
+    }
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    const updatePromises = [];
+    for (const item of lessonOrder) {
+      const updatePromise = docClient.send(
+        new import_lib_dynamodb.UpdateCommand({
+          TableName: process.env.TABLE_NAME || "ELearningPlatform-local",
+          Key: {
+            PK: `COURSE#${courseId}`,
+            SK: `LESSON#${item.lessonId}`
+          },
+          UpdateExpression: "SET #order = :order, #sectionOrder = :order, #updatedAt = :now, #GSI1SK = :gsi1sk",
+          ExpressionAttributeNames: {
+            "#order": "order",
+            "#sectionOrder": "sectionOrder",
+            "#updatedAt": "updatedAt",
+            "#GSI1SK": "GSI1SK"
+          },
+          ExpressionAttributeValues: {
+            ":order": item.order,
+            ":now": now,
+            ":gsi1sk": `ORDER#${String(item.order).padStart(3, "0")}`
+          }
+        })
+      );
+      updatePromises.push(updatePromise);
+    }
+    await Promise.all(updatePromises);
+    const updatedLessons = await docClient.send(
+      new import_lib_dynamodb.QueryCommand({
+        TableName: process.env.TABLE_NAME || "ELearningPlatform-local",
+        IndexName: "GSI1",
+        KeyConditionExpression: "GSI1PK = :sectionKey",
+        ExpressionAttributeValues: {
+          ":sectionKey": `COURSE#${courseId}#SECTION#${sectionId}`
+        }
+      })
+    );
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      },
+      body: JSON.stringify({
+        message: "Lessons reordered successfully",
+        lessons: updatedLessons.Items?.sort((a, b) => a.order - b.order) || []
+      })
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error"
+      })
+    };
+  }
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

@@ -38,50 +38,60 @@ var dynamoClient = new import_client_dynamodb.DynamoDBClient({
 var docClient = import_lib_dynamodb.DynamoDBDocumentClient.from(dynamoClient);
 var handler = async (event) => {
   try {
-    console.log("Event:", JSON.stringify(event, null, 2));
-    const { category, limit = "20", lastKey } = event.queryStringParameters || {};
-    const response = {
-      courses: [
-        {
-          courseId: "course-1",
-          title: "Test Course 1",
-          description: "This is a test course",
-          instructor: "Test Instructor",
-          price: 99.99,
-          thumbnail: "https://via.placeholder.com/400x300"
-        },
-        {
-          courseId: "course-2",
-          title: "Test Course 2",
-          description: "Another test course",
-          instructor: "Test Instructor",
-          price: 49.99,
-          thumbnail: "https://via.placeholder.com/400x300"
+    console.log("Listing courses...");
+    console.log("Table:", process.env.TABLE_NAME || "ELearningPlatform-local");
+    const result = await docClient.send(
+      new import_lib_dynamodb.ScanCommand({
+        TableName: process.env.TABLE_NAME || "ELearningPlatform-local",
+        FilterExpression: "EntityType = :type OR (begins_with(PK, :prefix) AND SK = :sk)",
+        ExpressionAttributeValues: {
+          ":type": "CourseMetadata",
+          ":prefix": "COURSE#",
+          ":sk": "METADATA"
         }
-      ],
-      pagination: {
-        total: 2,
-        limit: parseInt(limit),
-        hasMore: false
-      }
-    };
+      })
+    );
+    console.log("Scan result count:", result.Count);
+    console.log("Items found:", JSON.stringify(result.Items, null, 2));
+    const courses = (result.Items || []).filter((item) => item.courseId).map((item) => ({
+      courseId: item.courseId,
+      title: item.title,
+      description: item.description,
+      thumbnail: item.thumbnail || "https://via.placeholder.com/400x200",
+      instructorName: item.instructorName,
+      price: item.price,
+      discountPrice: item.discountPrice,
+      currency: item.currency || "USD",
+      category: item.category,
+      level: item.level,
+      totalStudents: item.totalStudents || 0,
+      averageRating: item.averageRating || 0,
+      totalDuration: item.totalDuration || 0,
+      totalLessons: item.totalLessons || 0
+    }));
+    console.log("Formatted courses:", JSON.stringify(courses, null, 2));
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": true
+        "Access-Control-Allow-Origin": "*"
       },
-      body: JSON.stringify(response)
+      body: JSON.stringify({
+        courses,
+        pagination: {
+          total: courses.length,
+          limit: 20,
+          hasMore: false
+        }
+      })
     };
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error listing courses:", error);
     return {
       statusCode: 500,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": true
+        "Access-Control-Allow-Origin": "*"
       },
       body: JSON.stringify({
         error: "Internal server error",

@@ -29,16 +29,19 @@ var dynamoClient = new import_client_dynamodb.DynamoDBClient({
   region: process.env.AWS_REGION || "us-east-1",
   ...process.env.STAGE === "local" && {
     endpoint: "http://localhost:8000",
-    credentials: {
-      accessKeyId: "local",
-      secretAccessKey: "local"
-    }
+    credentials: { accessKeyId: "local", secretAccessKey: "local" }
   }
 });
 var docClient = import_lib_dynamodb.DynamoDBDocumentClient.from(dynamoClient);
 var handler = async (event) => {
   try {
-    const courseId = event.pathParameters?.courseId;
+    let courseId = event.pathParameters?.courseId;
+    if (!courseId && event.path) {
+      const match = event.path.match(/\/courses\/([^/]+)/);
+      if (match) {
+        courseId = match[1];
+      }
+    }
     if (!courseId) {
       return {
         statusCode: 400,
@@ -59,7 +62,10 @@ var handler = async (event) => {
       return {
         statusCode: 404,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ error: "Course not found" })
+        body: JSON.stringify({
+          error: "Course not found",
+          courseId
+        })
       };
     }
     return {

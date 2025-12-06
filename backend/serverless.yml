@@ -66,6 +66,126 @@ plugins:
   - serverless-offline
 
 functions:
+# ============================================
+  # USER FUNCTIONS
+  # ============================================
+  createUserProfile:
+    handler: lambda/users/create-profile/index.handler
+    events:
+      - http:
+          method: POST
+          path: users/profile
+          cors: true
+  
+  getUserProfile:
+    handler: lambda/users/get-profile/index.handler
+    events:
+      - http:
+          method: GET
+          path: users/{userId}
+          cors: true
+  
+  updateUserProfile:
+    handler: lambda/users/update-profile/index.handler
+    events:
+      - http:
+          method: PUT
+          path: users/{userId}/profile
+          cors: true
+  
+  updateUserSettings:
+    handler: lambda/users/update-settings/index.handler
+    events:
+      - http:
+          method: PUT
+          path: users/{userId}/settings
+          cors: true
+  
+  # ============================================
+  # SECTION FUNCTIONS
+  # ============================================
+  createSection:
+    handler: lambda/sections/create/index.handler
+    events:
+      - http:
+          method: POST
+          path: courses/{courseId}/sections
+          cors: true
+  
+  listSections:
+    handler: lambda/sections/list/index.handler
+    events:
+      - http:
+          method: GET
+          path: courses/{courseId}/sections
+          cors: true
+  
+  updateSection:
+    handler: lambda/sections/update/index.handler
+    events:
+      - http:
+          method: PUT
+          path: courses/{courseId}/sections/{sectionId}
+          cors: true
+  
+  deleteSection:
+    handler: lambda/sections/delete/index.handler
+    events:
+      - http:
+          method: DELETE
+          path: courses/{courseId}/sections/{sectionId}
+          cors: true
+  
+  reorderSections:
+    handler: lambda/sections/reorder/index.handler
+    events:
+      - http:
+          method: POST
+          path: courses/{courseId}/sections/reorder
+          cors: true
+  
+  # ============================================
+  # PAYMENT FUNCTIONS
+  # ============================================
+  createPaymentIntent:
+    handler: lambda/payments/create-payment-intent/index.handler
+    events:
+      - http:
+          method: POST
+          path: payments/intent
+          cors: true
+  
+  confirmPayment:
+    handler: lambda/payments/confirm-payment/index.handler
+    events:
+      - http:
+          method: POST
+          path: payments/confirm
+          cors: true
+  
+  getPaymentHistory:
+    handler: lambda/payments/get-payment-history/index.handler
+    events:
+      - http:
+          method: GET
+          path: payments/history/{userId}
+          cors: true
+  
+  createCoupon:
+    handler: lambda/payments/create-coupon/index.handler
+    events:
+      - http:
+          method: POST
+          path: coupons
+          cors: true
+  
+  validateCoupon:
+    handler: lambda/payments/validate-coupon/index.handler
+    events:
+      - http:
+          method: GET
+          path: coupons/{couponCode}/validate
+          cors: true
   # ============================================
   # COURSE FUNCTIONS
   # ============================================

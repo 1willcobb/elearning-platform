@@ -23,12 +23,54 @@ __export(unenroll_exports, {
   handler: () => handler
 });
 module.exports = __toCommonJS(unenroll_exports);
+var import_client_dynamodb = require("@aws-sdk/client-dynamodb");
+var import_lib_dynamodb = require("@aws-sdk/lib-dynamodb");
+var dynamoClient = new import_client_dynamodb.DynamoDBClient({
+  region: process.env.AWS_REGION || "us-east-1",
+  ...process.env.STAGE === "local" && {
+    endpoint: "http://localhost:8000",
+    credentials: { accessKeyId: "local", secretAccessKey: "local" }
+  }
+});
+var docClient = import_lib_dynamodb.DynamoDBDocumentClient.from(dynamoClient);
 var handler = async (event) => {
-  return {
-    statusCode: 200,
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    body: JSON.stringify({ message: "Enrollment endpoint - TODO", path: event.path })
-  };
+  try {
+    const courseId = event.pathParameters?.courseId;
+    if (!courseId) {
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: "courseId is required" })
+      };
+    }
+    const userId = "user123";
+    await docClient.send(
+      new import_lib_dynamodb.DeleteCommand({
+        TableName: process.env.TABLE_NAME || "ELearningPlatform-local",
+        Key: { PK: `USER#${userId}`, SK: `ENROLLMENT#${courseId}` }
+      })
+    );
+    await docClient.send(
+      new import_lib_dynamodb.UpdateCommand({
+        TableName: process.env.TABLE_NAME || "ELearningPlatform-local",
+        Key: { PK: `COURSE#${courseId}`, SK: "METADATA" },
+        UpdateExpression: "SET totalStudents = totalStudents - :dec",
+        ExpressionAttributeValues: { ":dec": 1 }
+      })
+    );
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ message: "Unenrolled successfully" })
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ error: "Internal server error", message: error instanceof Error ? error.message : "Unknown error" })
+    };
+  }
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
