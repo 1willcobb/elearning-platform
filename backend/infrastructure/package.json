@@ -1,0 +1,46 @@
+{
+  "name": "infrastructure",
+  "version": "0.1.0",
+  "bin": {
+    "infrastructure": "bin/infrastructure.js"
+  },
+"scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    
+    "synth": "cdk synth",
+    "synth:local": "cdk synth -c environment=local",
+    "synth:preprod": "cdk synth -c environment=preprod",
+    "synth:prod": "cdk synth -c environment=production",
+    
+    "diff:preprod": "cdk diff -c environment=preprod",
+    "diff:prod": "cdk diff -c environment=production",
+    
+    "deploy:preprod": "cdk deploy -c environment=preprod --require-approval never",
+    "deploy:prod": "cdk deploy -c environment=production --require-approval always",
+    
+    "destroy:preprod": "cdk destroy -c environment=preprod",
+    "destroy:prod": "cdk destroy -c environment=production"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^24.10.1",
+    "aws-cdk": "2.1033.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigateway": "^1.203.0",
+    "@aws-cdk/aws-cloudfront": "^1.203.0",
+    "@aws-cdk/aws-cognito": "^1.203.0",
+    "@aws-cdk/aws-dynamodb": "^1.203.0",
+    "@aws-cdk/aws-lambda": "^1.203.0",
+    "@aws-cdk/aws-s3": "^1.203.0",
+    "aws-cdk-lib": "2.215.0",
+    "constructs": "^10.0.0",
+    "dotenv": "^17.2.3"
+  }
+}

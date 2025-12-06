@@ -1,0 +1,42 @@
+{
+  "name": "elearning-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "mobile",
+    "backend/infrastructure",
+    "backend/lambda/*",
+    "shared"
+  ],
+  "scripts": {
+    "mobile": "cd mobile && npm start",
+    "mobile:ios": "cd mobile && npm run ios",
+    "mobile:android": "cd mobile && npm run android",
+    "backend:local": "cd backend && npm run local",
+    "backend:deploy:local": "cd backend && npm run deploy:local",
+    "backend:deploy:preprod": "cd backend && npm run deploy:preprod",
+    "backend:deploy:prod": "cd backend && npm run deploy:prod",
+    "cdk:synth": "cd backend/infrastructure && npm run synth",
+    "cdk:diff": "cd backend/infrastructure && npm run diff",
+    "cdk:deploy": "cd backend/infrastructure && npm run deploy",
+    "setup": "npm run setup:mobile && npm run setup:backend",
+    "setup:mobile": "cd mobile && npm install",
+    "setup:backend": "cd backend/infrastructure && npm install",
+    "env:sync": "node backend/scripts/sync-env.js",
+    "seed:local": "node backend/scripts/seed-data.js local",
+    "seed:preprod": "node backend/scripts/seed-data.js preprod"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigateway": "^1.203.0",
+    "@aws-cdk/aws-cloudfront": "^1.203.0",
+    "@aws-cdk/aws-cognito": "^1.203.0",
+    "@aws-cdk/aws-dynamodb": "^1.203.0",
+    "@aws-cdk/aws-lambda": "^1.203.0",
+    "@aws-cdk/aws-s3": "^1.203.0",
+    "dotenv": "^17.2.3"
+  }
+}

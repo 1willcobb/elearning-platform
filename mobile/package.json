@@ -1,0 +1,40 @@
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "start:local": "ENV_FILE=.env.local expo start",
+    "start:preprod": "ENV_FILE=.env.preprod expo start",
+    "start:prod": "ENV_FILE=.env.production expo start",
+    "build:preprod": "eas build --profile preprod",
+    "build:prod": "eas build --profile production"
+  },
+  "dependencies": {
+    "@aws-amplify/auth": "^6.17.0",
+    "@aws-amplify/core": "^6.14.0",
+    "@aws-amplify/storage": "^6.10.1",
+    "@aws-cdk/aws-apigateway": "^1.203.0",
+    "@aws-cdk/aws-cloudfront": "^1.203.0",
+    "@aws-cdk/aws-cognito": "^1.203.0",
+    "@aws-cdk/aws-dynamodb": "^1.203.0",
+    "@aws-cdk/aws-lambda": "^1.203.0",
+    "@aws-cdk/aws-s3": "^1.203.0",
+    "dotenv": "^17.2.3",
+    "expo": "~54.0.27",
+    "expo-status-bar": "~3.0.9",
+    "nativewind": "^4.2.1",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-dotenv": "^3.4.11"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "tailwindcss": "^4.1.17",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}
