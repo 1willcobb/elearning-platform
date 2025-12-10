@@ -1,0 +1,6 @@
+2025-12-09 22:51:57.674 xcodebuild[92898:4582600] Writing error result bundle to /var/folders/9c/z6zknh2528l9y25y0m2ys0540000gn/T/ResultBundle_2025-09-12_22-51-0057.xcresult
+xcodebuild: error: Unable to find a destination matching the provided destination specifier:
+		{ id:82A9535B-F031-48D1-B82E-7DE3F73313F9 }
+
+	Ineligible destinations for the "elearningplatform" scheme:
+		{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device, error:iOS 26.1 is not installed. Please download and install the platform from Xcode > Settings > Components. }

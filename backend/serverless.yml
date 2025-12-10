@@ -12,6 +12,10 @@ provider:
     VIDEO_BUCKET: ${self:custom.videoBucket}
     UPLOADS_BUCKET: ${self:custom.uploadsBucket}
     STAGE: ${self:provider.stage}
+    JWT_SECRET: ${env:JWT_SECRET, 'your-secret-key-change-in-production'}
+    JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET, 'your-refresh-secret-key-change-in-production'}
+    FROM_EMAIL: ${env:FROM_EMAIL, 'noreply@elearning.com'}
+    FRONTEND_URL: ${env:FRONTEND_URL, 'http://localhost:3000'}
   
   iam:
     role:
@@ -36,6 +40,12 @@ provider:
           Resource:
             - arn:aws:s3:::${self:custom.videoBucket}/*
             - arn:aws:s3:::${self:custom.uploadsBucket}/*
+
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+          Resource: '*'
 
 custom:
   tableName: ELearningPlatform-${self:provider.stage}
@@ -66,6 +76,203 @@ plugins:
   - serverless-offline
 
 functions:
+  # ============================================
+  # AUTH FUNCTIONS
+  # ============================================
+  register:
+    handler: lambda/auth/register/index.handler
+    events:
+      - http:
+          method: POST
+          path: auth/register
+          cors: true
+
+  login:
+    handler: lambda/auth/login/index.handler
+    events:
+      - http:
+          method: POST
+          path: auth/login
+          cors: true
+
+  refreshToken:
+    handler: lambda/auth/refresh-token/index.handler
+    events:
+      - http:
+          method: POST
+          path: auth/refresh
+          cors: true
+
+  verifyToken:
+    handler: lambda/auth/verify-token/index.handler
+    events:
+      - http:
+          method: GET
+          path: auth/verify
+          cors: true
+
+  # Password Reset
+  requestPasswordReset:
+    handler: lambda/auth/request-password-reset/index.handler
+    events:
+      - http:
+          method: POST
+          path: auth/password-reset/request
+          cors: true
+
+  verifyResetToken:
+    handler: lambda/auth/verify-reset-token/index.handler
+    events:
+      - http:
+          method: GET
+          path: auth/password-reset/verify
+          cors: true
+
+  resetPassword:
+    handler: lambda/auth/reset-password/index.handler
+    events:
+      - http:
+          method: POST
+          path: auth/password-reset/reset
+          cors: true
+
+  # ============================================
+  # SESSION MANAGEMENT FUNCTIONS
+  # ============================================
+  listSessions:
+    handler: lambda/sessions/list/index.handler
+    events:
+      - http:
+          method: GET
+          path: sessions
+          cors: true
+
+  revokeSession:
+    handler: lambda/sessions/revoke/index.handler
+    events:
+      - http:
+          method: DELETE
+          path: sessions/{sessionId}
+          cors: true
+
+  revokeAllSessions:
+    handler: lambda/sessions/revoke-all/index.handler
+    events:
+      - http:
+          method: DELETE
+          path: sessions
+          cors: true
+
+  # ============================================
+  # SCHOOL FUNCTIONS
+  # ============================================
+  createSchool:
+    handler: lambda/schools/create/index.handler
+    events:
+      - http:
+          method: POST
+          path: schools
+          cors: true
+
+  getMySchool:
+    handler: lambda/schools/get-my-school/index.handler
+    events:
+      - http:
+          method: GET
+          path: schools/my-school
+          cors: true
+
+  getSchool:
+    handler: lambda/schools/get/index.handler
+    events:
+      - http:
+          method: GET
+          path: schools/{schoolId}
+          cors: true
+
+  listSchools:
+    handler: lambda/schools/list/index.handler
+    events:
+      - http:
+          method: GET
+          path: schools
+          cors: true
+
+  updateSchool:
+    handler: lambda/schools/update/index.handler
+    events:
+      - http:
+          method: PUT
+          path: schools/{schoolId}
+          cors: true
+
+  deleteSchool:
+    handler: lambda/schools/delete/index.handler
+    events:
+      - http:
+          method: DELETE
+          path: schools/{schoolId}
+          cors: true
+
+  # ============================================
+  # SUPER ADMIN FUNCTIONS
+  # ============================================
+  adminCreateUser:
+    handler: lambda/admin/create-user/index.handler
+    events:
+      - http:
+          method: POST
+          path: admin/users
+          cors: true
+
+  adminCreateSchool:
+    handler: lambda/admin/create-school/index.handler
+    events:
+      - http:
+          method: POST
+          path: admin/schools
+          cors: true
+
+  adminManualEnroll:
+    handler: lambda/admin/manual-enroll/index.handler
+    events:
+      - http:
+          method: POST
+          path: admin/enrollments
+          cors: true
+
+  adminUpdateUserRoles:
+    handler: lambda/admin/update-user-roles/index.handler
+    events:
+      - http:
+          method: PUT
+          path: admin/users/roles
+          cors: true
+
+  adminListAllUsers:
+    handler: lambda/admin/list-all-users/index.handler
+    events:
+      - http:
+          method: GET
+          path: admin/users
+          cors: true
+
+  adminListAllSchools:
+    handler: lambda/admin/list-all-schools/index.handler
+    events:
+      - http:
+          method: GET
+          path: admin/schools
+          cors: true
+
+  adminDeleteUser:
+    handler: lambda/admin/delete-user/index.handler
+    events:
+      - http:
+          method: DELETE
+          path: admin/users/{userId}
+          cors: true
+
 # ============================================
   # USER FUNCTIONS
   # ============================================

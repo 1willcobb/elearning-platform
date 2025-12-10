@@ -24,7 +24,9 @@
     "setup:backend": "cd backend/infrastructure && npm install",
     "env:sync": "node backend/scripts/sync-env.js",
     "seed:local": "node backend/scripts/seed-data.js local",
-    "seed:preprod": "node backend/scripts/seed-data.js preprod"
+    "seed:preprod": "node backend/scripts/seed-data.js preprod",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",
@@ -37,6 +39,9 @@
     "@aws-cdk/aws-dynamodb": "^1.203.0",
     "@aws-cdk/aws-lambda": "^1.203.0",
     "@aws-cdk/aws-s3": "^1.203.0",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "expo": "~54.0.27",
+    "react": "19.1.0",
+    "react-native": "0.81.5"
   }
 }

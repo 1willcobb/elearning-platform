@@ -97,6 +97,7 @@ var s3Client = new import_client_s3.S3Client({
 });
 var handler = async (event) => {
   try {
+    console.log("=== UPLOAD PRESIGNED URL REQUEST ===");
     if (!event.body) {
       return {
         statusCode: 400,
@@ -115,18 +116,21 @@ var handler = async (event) => {
     }
     const fileId = v4_default();
     const fileExtension = fileName.split(".").pop();
-    const key = `${uploadType}s/${fileId}.${fileExtension}`;
+    const key = `videos/${fileId}.${fileExtension}`;
     const bucket = uploadType === "video" ? "course-videos" : "course-thumbnails";
+    console.log("Generating presigned URL for:", { bucket, key, fileType });
     const command = new import_client_s3.PutObjectCommand({
       Bucket: bucket,
       Key: key,
       ContentType: fileType
     });
     const uploadUrl = await (0, import_s3_request_presigner.getSignedUrl)(s3Client, command, {
-      expiresIn: 3600
-      // 1 hour
+      expiresIn: 3600,
+      signableHeaders: /* @__PURE__ */ new Set(["host"]),
+      unhoistableHeaders: /* @__PURE__ */ new Set()
     });
-    const publicUrl = process.env.STAGE === "local" ? `http://localhost:9000/${bucket}/${key}` : `https://${process.env.CDN_DOMAIN}/${key}`;
+    const publicUrl = `http://localhost:9000/${bucket}/${key}`;
+    console.log("Generated URLs");
     return {
       statusCode: 200,
       headers: {
@@ -142,7 +146,7 @@ var handler = async (event) => {
       })
     };
   } catch (error) {
-    console.error("Error:", error);
+    console.error("ERROR:", error);
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },

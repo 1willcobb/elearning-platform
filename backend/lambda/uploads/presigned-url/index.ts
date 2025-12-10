@@ -19,6 +19,8 @@ export const handler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   try {
+    console.log('=== UPLOAD PRESIGNED URL REQUEST ===');
+
     if (!event.body) {
       return {
         statusCode: 400,
@@ -38,31 +40,29 @@ export const handler = async (
       };
     }
 
-    // Generate unique file name
     const fileId = uuidv4();
     const fileExtension = fileName.split('.').pop();
-    const key = `${uploadType}s/${fileId}.${fileExtension}`;
-    
-    // Choose bucket based on upload type
-    const bucket = uploadType === 'video' 
-      ? 'course-videos'
-      : 'course-thumbnails';
+    const key = `videos/${fileId}.${fileExtension}`;
+    const bucket = uploadType === 'video' ? 'course-videos' : 'course-thumbnails';
 
-    // Create presigned URL for upload
+    console.log('Generating presigned URL for:', { bucket, key, fileType });
+
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
       ContentType: fileType,
     });
 
-    const uploadUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 3600, // 1 hour
+    // Generate presigned URL with simpler signing
+    const uploadUrl = await getSignedUrl(s3Client, command, { 
+      expiresIn: 3600,
+      signableHeaders: new Set(['host']),
+      unhoistableHeaders: new Set()
     });
+    
+    const publicUrl = `http://localhost:9000/${bucket}/${key}`;
 
-    // Generate the public URL for accessing the file
-    const publicUrl = process.env.STAGE === 'local'
-      ? `http://localhost:9000/${bucket}/${key}`
-      : `https://${process.env.CDN_DOMAIN}/${key}`;
+    console.log('Generated URLs');
 
     return {
       statusCode: 200,
@@ -79,7 +79,7 @@ export const handler = async (
       }),
     };
   } catch (error) {
-    console.error('Error:', error);
+    console.error('ERROR:', error);
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },

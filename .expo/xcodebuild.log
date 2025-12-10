@@ -1,0 +1,3 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project /Users/1willcobb/code_2025/elearning-platform/ios/elearningplatform.xcodeproj -configuration Debug -scheme elearningplatform -destination id=82A9535B-F031-48D1-B82E-7DE3F73313F9
+
